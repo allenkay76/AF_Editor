@@ -8,11 +8,30 @@ if (require('electron-squirrel-startup')) {
 
 const template = [
   {
-  label: 'File',
-  submenu:[
-    {
-      label: 'New',
-      role: 'New'
+    label: 'File',
+    submenu:[
+      {
+        label: 'New',
+        role: 'New',
+        click: async function() {
+          const { exec } = require('child_process');
+
+          const { dialog } = require('electron');
+          const result = await dialog.showOpenDialog({
+            properties: ['openDirectory']
+          });
+          if (!result.canceled) {
+            const selectedDir = result.filePaths[0];
+            const shellCmdsDir = path.join(__dirname, '..', 'shell_commands/CreateNewProject.sh');
+            exec(`${shellCmdsDir} ${selectedDir}`, (err, stdout, stderr) => {
+              if (err) {
+                console.error(err);
+                return;
+              }
+              console.log(stdout);
+            });
+        }
+      },
     },
     {
       label: 'Open',
@@ -128,14 +147,7 @@ const menu = Menu.buildFromTemplate(template)
 Menu.setApplicationMenu(menu)
 app.on('ready', createWindow);
 
-/*
-const menu = Menu.buildFromTemplate(template)
 
-app.on('ready', () => {
-  Menu.setAppApplicationMenu(menu);
-  createWindow();
-})
-*/
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
@@ -156,4 +168,6 @@ app.on('activate', () => {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
 
-
+app.on('New', () =>{
+  console.log("Create New Folder");
+});
